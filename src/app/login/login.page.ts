@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { Storage } from '@ionic/storage';
 
 import { User } from '../models/usuario.model';
 
@@ -22,7 +23,8 @@ export class LoginPage implements OnInit {
   constructor(
     private auth: AuthService,
     private router: Router,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private storage: Storage
   ) { }
 
   ngOnInit() { }
@@ -31,9 +33,10 @@ export class LoginPage implements OnInit {
     this.loginUser.email = this.credentials.email;
     this.loginUser.password = this.credentials.pw;
     this.auth.login(this.loginUser).subscribe(
-      async result => {
-      if (result.ok && result.ok === true ) {
-        console.log(result);
+      async res => {
+      if (res.result && res.result === 'ok' ) {
+        console.log(res.token);
+        this.storage.set('token', res.token);
         this.router.navigateByUrl('/app');
       } else {
         const alert = await this.alertCtrl.create({
@@ -44,7 +47,7 @@ export class LoginPage implements OnInit {
         await alert.present();
       }
     },
-   async error =>{
+   async error => {
       if ( error.error && error.error.ok === false) {
         const alert = await this.alertCtrl.create({
           header: 'Login Failed',
@@ -53,7 +56,13 @@ export class LoginPage implements OnInit {
         });
         await alert.present();
       } else {
-        console.log('Error: ', error.error);
+        console.log('Error: ', error);
+        const alert = await this.alertCtrl.create({
+          header: 'Login Failed',
+          message: 'Server error',
+          buttons: ['OK']
+        });
+        await alert.present();
       }
     });
   }

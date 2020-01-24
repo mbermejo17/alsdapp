@@ -14,7 +14,7 @@ import { User } from '../models/usuario.model';
 import { environment } from '../../environments/environment.prod';
 
 const helper = new JwtHelperService();
-const TOKEN_KEY = 'jwt-token';
+
 
 @Injectable({
   providedIn: 'root'
@@ -34,12 +34,13 @@ export class AuthService {
 
     this.user = platformObs.pipe(
       switchMap(() => {
-        return from(this.storage.get(TOKEN_KEY));
+        return from(this.storage.get('token'));
       }),
       map(token => {
         if (token) {
           const decoded = helper.decodeToken(token);
           this.userData.next(decoded);
+          console.log(this.userData);
           return true;
         } else {
           return null;
@@ -58,7 +59,7 @@ export class AuthService {
    // }
 
     return this.http.post(url, usuario);
-    // return this.http.get('https://randomuser.me/api/').pipe( 
+    // return this.http.get('https://randomuser.me/api/').pipe(
     // return this.http.post(url, usuario ).pipe(
     //  take(1),
     //  map(res => {
@@ -80,7 +81,7 @@ export class AuthService {
   }
 
   logout() {
-    this.storage.remove(TOKEN_KEY).then(() => {
+    this.storage.remove('token').then(() => {
       this.router.navigateByUrl('/');
       this.userData.next(null);
     });
